@@ -162,9 +162,9 @@ static void
 usage(void)
 {
 	fprintf(stderr, "usage: %s\n", argv0);
-	fprintf(stderr, "    -c application's WM_CLASS");
-	fprintf(stderr, "    -s server command");
-	fprintf(stderr, "    -e client command");
+	fprintf(stderr, "    -c application's WM_CLASS\n");
+	fprintf(stderr, "    -s server command\n");
+	fprintf(stderr, "    -e client command\n");
 }
 
 CargsDesc args[4] = {
@@ -240,6 +240,7 @@ main(int argc, char* argv[])
 
 	if (class == NULL) {
 		fprintf(stderr, "class or command not specified\n");
+		usage();
 		return EXIT_FAILURE;
 	}
 
