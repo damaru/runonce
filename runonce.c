@@ -208,10 +208,10 @@ usage(void)
 	fprintf(stderr, "usage: %s\n", argv0);
 }
 
-CargDesc args[4] = {
-	{ "-c", CargVal },
-	{ "-s", CargVal },
-	{ "-e", CargVal },
+CargsDesc args[4] = {
+	{ "-c", CargsVal },
+	{ "-s", CargsVal },
+	{ "-e", CargsVal },
 	{ NULL }
 };
 
@@ -253,15 +253,13 @@ main(int argc, char* argv[])
 	Window wins[64];
 	Window w = 0;
 
-#define CARG_SET(desc, index, var) var = (((desc)[index].flag ? (desc)[index].value : NULL))
-
 	argv0 = argv[0];
 
 	cargs_process(&argc, &argv, args);
 
-	CARG_SET(args, 0, class);
-	CARG_SET(args, 1, server);
-	CARG_SET(args, 2, client);
+	CARGS_GET(args, 0, class);
+	CARGS_GET(args, 1, server);
+	CARGS_GET(args, 2, client);
 
 	dpy = XOpenDisplay("");
 	if (dpy == 0) {
