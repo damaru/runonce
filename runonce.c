@@ -88,42 +88,6 @@ void send_client_message(Window win, long type, long l0, long l1, long l2)
 	    (XEvent*)&xev);
 }
 
-static void
-x_raise_window(Window w)
-{
-	XMapRaised(dpy, w);
-	//XRaiseWindow(dpy, w);
-	send_client_message(w, XInternAtom(dpy, "_NET_ACTIVE_WINDOW", False), 2, CurrentTime, 0);
-	XSetInputFocus(dpy, w, RevertToPointerRoot, CurrentTime);
-}
-
-#ifdef DEBUG
-static void
-print_window_name(Window w)
-{
-	unsigned char* name;
-	Atom actual_type;
-	int format;
-	unsigned long n;
-	unsigned long extra;
-
-	/*
-     *      This rather unpleasant hack is necessary because xwsh uses
-     *      COMPOUND_TEXT rather than STRING for its WM_NAME property,
-     *      and anonymous xwsh windows are annoying.
-     */
-	if (Success == XGetWindowProperty(dpy, w, XA_WM_NAME, 0L, 100L, False, AnyPropertyType,
-			   &actual_type, &format, &n, &extra, &name)
-	    && name != 0)
-		printf("%#x\t%s\n", (unsigned)w, (char*)name);
-	else
-		printf("%#x\t%s\n", (unsigned)w, "(none)");
-
-	if (name)
-		XFree(name);
-}
-#endif
-
 static Window
 find_window(char* class, Window* rets, int count)
 {
@@ -158,7 +122,6 @@ find_window(char* class, Window* rets, int count)
 				window_property(wins[i], "WM_CLASS", classes);
 				for (j = 0; classes[j]; j++) {
 					if (strstr(classes[j], class)) {
-						//printf("> %s %s\n", classes[j], class);
 						rets[r++] = wins[i];
 						break;
 					}
@@ -172,7 +135,6 @@ find_window(char* class, Window* rets, int count)
 					window_property(kids2[i2], "WM_CLASS", classes);
 					for (j = 0; classes[j]; j++) {
 						if (strstr(classes[j], class)) {
-							//printf("> %s %s\n", classes[j], class);
 							rets[r++] = kids2[i2];
 							break;
 						}
@@ -189,12 +151,6 @@ find_window(char* class, Window* rets, int count)
 	return r;
 }
 
-static void
-x_warp_pointer(Window w, int x, int y)
-{
-	XWarpPointer(dpy, None, w, 0, 0, 0, 0, x, y);
-}
-
 static int
 handler(Display* disp, XErrorEvent* err)
 {
@@ -206,6 +162,9 @@ static void
 usage(void)
 {
 	fprintf(stderr, "usage: %s\n", argv0);
+	fprintf(stderr, "    -c application's WM_CLASS");
+	fprintf(stderr, "    -s server command");
+	fprintf(stderr, "    -e client command");
 }
 
 CargsDesc args[4] = {
@@ -227,9 +186,8 @@ void spawn(const char* cmd)
 			if (dpy)
 				close(ConnectionNumber(dpy));
 			setsid();
-			setenv("ZWM_INSERT", "START", 1);
 			execl(shell, shell, "-c", cmd, (char*)NULL);
-			fprintf(stderr, "zwm: execl '%s -c %s' failed (%s)", shell, cmd, strerror(errno));
+			fprintf(stderr, "runonce: execl '%s -c %s' failed (%s)", shell, cmd, strerror(errno));
 		}
 		exit(0);
 	}
@@ -238,8 +196,11 @@ void spawn(const char* cmd)
 
 void x_switch(Window w)
 {
-	x_raise_window(w);
-	x_warp_pointer(w, 10, 10);
+	XMapRaised(dpy, w);
+	//XRaiseWindow(dpy, w);
+	send_client_message(w, XInternAtom(dpy, "_NET_ACTIVE_WINDOW", False), 2, CurrentTime, 0);
+	XSetInputFocus(dpy, w, RevertToPointerRoot, CurrentTime);
+	XWarpPointer(dpy, None, w, 0, 0, 0, 0, 10, 10);
 	XSync(dpy, True);
 }
 
@@ -284,9 +245,6 @@ main(int argc, char* argv[])
 
 	if (find_window(class, wins, 64)) {
 		w = wins[0];
-#ifdef DEBUG
-		print_window_name(w);
-#endif
 	}
 
 	if (w) {
