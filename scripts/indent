@@ -1,0 +1,8 @@
+#!/bin/sh
+F=$1
+clang-format-3.6 -style="{BasedOnStyle: WebKit, \
+	IndentWidth: 8, \
+	UseTab: Always, \
+	IndentCaseLabels: true, \
+	BreakBeforeBraces: Linux}" $F > $F.in
+mv $F.in $F
