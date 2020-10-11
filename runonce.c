@@ -7,6 +7,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <cargs.h>
+#include <sys/wait.h>
 
 Display* dpy;
 char* argv0;
